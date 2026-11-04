@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÓRBITASK</title>
+    <link rel="stylesheet" href="orbitask.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Jersey 15 (principal) · Nunito (secundaria) · VT323 (terciaria) -->
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+15&family=Nunito:wght@400;600;700&family=VT323&display=swap" rel="stylesheet">
+    <!-- EmailJS: manda el mail con el código de verificación del registro -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
+</head>
+<body>
+
+    <!-- ============================================================
+         PANTALLA DE INICIO / LOGIN
+         Usuarios habilitados: admin1 / 1234   y   admin2 / 4321
+         ============================================================ -->
+    <div id="pantalla_login">
+
+        <!-- 2/5 izquierdo: presentación -->
+        <section id="panel_presentacion">
+            <div id="bloque_presentacion">
+                <img id="logo_completo" src="logo-completo.png" alt="ÓRBITASK">
+                <h1 id="lema_presentacion">Tu órbita, en orden.</h1>
+                <p id="texto_presentacion">
+                    ÓRBITASK es una herramienta para registrar y administrar tus tareas,
+                    en sus dos formatos: web y físico.
+                </p>
+                <p id="texto_presentacion2">
+                    Cada tarea que completás alimenta a tu mascota espacial y la hace subir de nivel.
+                    Cuidala bien: cada tanto llega una amenaza del espacio y solo una mascota fuerte puede frenarla.
+                </p>
+            </div>
+
+            <!-- pista de scroll: solo se ve en celular -->
+            <div id="flecha_login" aria-hidden="true">
+                <span>Deslizá hacia abajo para ingresar</span>
+                <span class="flecha_abajo">▾</span>
+            </div>
+        </section>
+
+        <!-- 3/5 derecho: inicio de sesión y registro -->
+        <div id="caja_login">
+
+            <div id="pestanas_acceso">
+                <button type="button" id="pestana_login" class="activa">INGRESAR</button>
+                <button type="button" id="pestana_registro">REGISTRARME</button>
+            </div>
+
+            <h2 id="titulo_caja_login">Iniciar sesión</h2>
+
+            <form id="form_login" autocomplete="off">
+                <label for="login_usuario">Usuario</label>
+                <input type="text" id="login_usuario" name="usuario" placeholder="Tu nombre de usuario" required>
+                <label for="login_clave">Contraseña</label>
+                <input type="password" id="login_clave" name="clave" placeholder="••••" required>
+                <p id="login_error">Usuario o contraseña incorrectos</p>
+                <button type="submit" id="boton_login">INGRESAR</button>
+            </form>
+
+            <form id="form_registro" autocomplete="off" hidden>
+                <label for="registro_usuario">Nombre</label>
+                <input type="text" id="registro_usuario" name="usuario_nuevo"
+                       placeholder="¿Cómo quieres que te llamemos?" maxlength="20" required>
+
+                <label for="registro_mail">Mail</label>
+                <input type="email" id="registro_mail" name="mail"
+                       placeholder="Ingresá tu mail" maxlength="60" required>
+
+                <label for="registro_clave">Contraseña</label>
+                <input type="password" id="registro_clave" name="clave_nueva"
+                       placeholder="Mínimo 6 caracteres" maxlength="40" required>
+
+                <label for="registro_clave2">Repetir contraseña</label>
+                <input type="password" id="registro_clave2" name="clave_repetida"
+                       placeholder="La misma de arriba" maxlength="40" required>
+
+                <p id="registro_error"></p>
+                <button type="submit" id="boton_registro">CREAR CUENTA</button>
+            </form>
+
+            <!-- paso 2 del registro: el código que llega por mail -->
+            <form id="form_codigo" autocomplete="off" hidden>
+                <p id="texto_codigo">
+                    Te mandamos un código de 6 números a
+                    <strong id="mail_destino">tu mail</strong>.
+                    Si no lo ves, fijate en el correo no deseado.
+                </p>
+
+                <label for="codigo_ingresado">Código de verificación</label>
+                <input type="text" id="codigo_ingresado" name="codigo"
+                       inputmode="numeric" maxlength="6" placeholder="000000" required>
+
+                <p id="codigo_error"></p>
+                <button type="submit" id="boton_verificar">VERIFICAR Y ENTRAR</button>
+
+                <div id="opciones_codigo">
+                    <button type="button" id="boton_reenviar">Reenviar código</button>
+                    <button type="button" id="boton_volver_registro">Cambiar los datos</button>
+                </div>
+            </form>
+
+            <!-- ===== MODO DISEÑO — BORRAR ANTES DE PUBLICAR ===== -->
+            <div id="zona_dev">
+                <button type="button" id="boton_reset_dev">↺ REINICIAR USUARIOS</button>
+                <p id="aviso_dev">Modo diseño: borra el progreso de admin1 y admin2 para volver a ver el tutorial y la revelación de mascota.</p>
+            </div>
+            <!-- ===== FIN MODO DISEÑO ===== -->
+        </div>
+    </div>
+
+    <!-- ============================================================
+         APLICACIÓN
+         ============================================================ -->
+    <div id="app" hidden>
+
+        <header>
+            <div class="marca" id="marca_header">
+                <span class="marca_texto"><span class="marca_orbi">ORBI</span><span class="marca_task">TASK</span></span>
+                <span class="logo_pequeno">
+                    <img src="https://ik.imagekit.io/ui9le8s20/IMG_5605.PNG" alt="isotipo de ÓRBITASK">
+                </span>
+            </div>
+
+            <!-- ---------- CONTADOR DE AMENAZA ESPACIAL ---------- -->
+            <div id="contador_amenaza" class="esperando">
+                <div id="amenaza_titulo">AMENAZA ESPACIAL</div>
+                <div id="amenaza_linea">
+                    <span id="amenaza_tiempo">--:--</span>
+                    <span id="amenaza_nivel">NIVEL NECESARIO 1</span>
+                </div>
+            </div>
+
+            <!-- en celular los tres botones viven dentro del menú ☰ -->
+            <div id="zona_nav">
+                <button id="menu_movil" type="button" aria-expanded="false" title="Menú">☰</button>
+
+                <nav id="nav_botones">
+                    <button id="botontut" type="button" title="Tutorial del sitio web">?</button>
+                    <button id="botontut2" type="button" title="Tutorial del aparato físico">
+                        <span class="logo_pequeno">
+                            <img src="https://ik.imagekit.io/ui9le8s20/IMG_5605.PNG" alt="tutorial del aparato físico">
+                        </span>
+                    </button>
+                    <!-- rueda de configuración: despliega los otros tres botones -->
+                    <div id="zona_config">
+                        <button id="boton_config" type="button" aria-expanded="false" title="Configuración">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="3.2"/>
+                                <path d="M19.4 15a1.6 1.6 0 0 0 .32 1.77l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.6 1.6 0 0 0-1.77-.32 1.6 1.6 0 0 0-1 1.47V21a2 2 0 1 1-4 0v-.11a1.6 1.6 0 0 0-1.05-1.46 1.6 1.6 0 0 0-1.77.32l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.6 1.6 0 0 0 .32-1.77 1.6 1.6 0 0 0-1.47-1H3a2 2 0 1 1 0-4h.11a1.6 1.6 0 0 0 1.46-1.05 1.6 1.6 0 0 0-.32-1.77l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.6 1.6 0 0 0 1.77.32H9a1.6 1.6 0 0 0 1-1.47V3a2 2 0 1 1 4 0v.11a1.6 1.6 0 0 0 1 1.47 1.6 1.6 0 0 0 1.77-.32l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.6 1.6 0 0 0-.32 1.77V9a1.6 1.6 0 0 0 1.47 1H21a2 2 0 1 1 0 4h-.11a1.6 1.6 0 0 0-1.47 1z"/>
+                            </svg>
+                        </button>
+
+                        <div id="menu_config">
+                            <button id="boton_cuenta" type="button" title="Mi cuenta">
+                                <img id="foto_perfil_chica" src="" alt="">
+                                <svg id="icono_persona" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="8" r="4"/>
+                                    <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+                                </svg>
+                            </button>
+
+                            <button id="botoninfo" type="button" title="Información y redes">i</button>
+
+                            <button id="boton_salir" type="button" title="Cerrar sesión">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M14 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                                    <path d="M9 17l5-5-5-5"/>
+                                    <path d="M14 12H3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main>
+            <div id="seccion_abajo">
+
+                <!-- ---------- MÓDULO MASCOTA ---------- -->
+                <div id="seccion_personaje">
+                    <div id="seccion_QBy">
+                        <div id="gif">
+                            <img id="gif_mascota" src="" alt="mascota alienígena">
+                        </div>
+                    </div>
+
+                    <!-- barra de vida + contador de nivel -->
+                    <div id="zona_vida">
+                        <div id="barra_vida" title="Barra de vida de tu mascota">
+                            <div id="barra_vida_relleno"></div>
+                            <span id="barra_vida_texto">0%</span>
+                        </div>
+                        <div id="contador_nivel">NIVEL 0</div>
+                    </div>
+
+                    <div id="seccion_tutorial">
+                        <p id="nombre_mascota">—</p>
+                        <p id="tip_mascota">Completá tareas y alimentá a tu mascota con el botón ♥ de la lista de realizados.</p>
+                    </div>
+                </div>
+
+                <!-- ---------- MÓDULO LISTAS ---------- -->
+                <div id="seccion_lista" class="ver_pendientes">
+
+                    <!-- pestañas: solo se ven en celular -->
+                    <div id="pestanas_listas">
+                        <button type="button" id="pestana_pendientes" class="activa">PENDIENTES</button>
+                        <button type="button" id="pestana_realizados">REALIZADOS</button>
+                    </div>
+
+                    <div id="lista_pendientes">
+                        <h3>PENDIENTES</h3>
+                        <div id="lista">
+                            <ul id="ul_pendientes"></ul>
+                        </div>
+                        <button id="boton" type="button" title="Agregar tarea">+</button>
+                    </div>
+
+                    <div id="lista_realizados">
+                        <h3>REALIZADOS</h3>
+                        <div id="lista2">
+                            <ul id="ul_realizados"></ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- ============================================================
+         PANEL DE ADMINISTRACIÓN (solo admin2)
+         ============================================================ -->
+    <div id="panel_admin" hidden>
+
+        <header id="header_admin">
+            <div class="marca">
+                <span class="marca_texto"><span class="marca_orbi">ORBI</span><span class="marca_task">TASK</span></span>
+                <span class="logo_pequeno">
+                    <img src="https://ik.imagekit.io/ui9le8s20/IMG_5605.PNG" alt="isotipo de ÓRBITASK">
+                </span>
+            </div>
+
+            <span id="chapa_admin">PANEL DE CONTROL</span>
+
+            <button id="boton_salir_admin" type="button" title="Cerrar sesión">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                    <path d="M9 17l5-5-5-5"/>
+                    <path d="M14 12H3"/>
+                </svg>
+            </button>
+        </header>
+
+        <main id="main_admin">
+            <div id="caja_admin">
+
+                <div id="tarjetas_admin">
+                    <div class="tarjeta_admin">
+                        <span class="numero_admin" id="dato_usuarios">0</span>
+                        <span class="rotulo_admin">usuarios</span>
+                    </div>
+                    <div class="tarjeta_admin">
+                        <span class="numero_admin" id="dato_pendientes">0</span>
+                        <span class="rotulo_admin">tareas pendientes</span>
+                    </div>
+                    <div class="tarjeta_admin">
+                        <span class="numero_admin" id="dato_realizadas">0</span>
+                        <span class="rotulo_admin">tareas realizadas</span>
+                    </div>
+                    <div class="tarjeta_admin">
+                        <span class="numero_admin" id="dato_activos">0</span>
+                        <span class="rotulo_admin">entraron hoy</span>
+                    </div>
+                </div>
+
+                <div id="barra_admin">
+                    <h2 id="titulo_admin">USUARIOS REGISTRADOS</h2>
+                    <div id="acciones_admin">
+                        <span id="estado_admin">—</span>
+                        <button type="button" id="boton_refrescar">↻ ACTUALIZAR</button>
+                    </div>
+                </div>
+
+                <div id="marco_tabla">
+                    <table id="tabla_usuarios">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Contraseña</th>
+                                <th>Mail</th>
+                                <th>Mascota y vida</th>
+                                <th class="col_numero">Pendientes</th>
+                                <th class="col_numero">Realizadas</th>
+                                <th>Amenaza espacial</th>
+                                <th>Se registró</th>
+                                <th>Último ingreso</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpo_tabla"></tbody>
+                    </table>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================================
+         DIALOG: AGREGAR / EDITAR ITEM
+         ============================================================ -->
+    <dialog id="agregar_item">
+        <button type="button" class="boton_cerrar" data-cerrar="agregar_item" title="Cerrar">✕</button>
+        <form id="form_item">
+            <h2 id="titulo_form_item">NUEVA TAREA</h2>
+
+            <label for="primera_barra">Nombre <span class="obligatorio">*</span></label>
+            <input class="barras_texto" id="primera_barra" type="text" name="nombre"
+                   placeholder="Ingresá el nombre de tu próxima tarea" maxlength="60" required>
+
+            <label for="segunda_barra">Descripción</label>
+            <textarea class="barras_texto" id="segunda_barra" name="descripcion"
+                      placeholder="Describí brevemente qué es lo que tenés que hacer (opcional)" maxlength="300"></textarea>
+
+            <div id="orden_prioridad">
+                <div id="seccion_urgencia">
+                    <label for="select_urgencia">Urgencia</label>
+                    <select id="select_urgencia" name="urgencia">
+                        <option value="4">🔴 Rojo — muy urgente</option>
+                        <option value="3">🟠 Naranja — urgente</option>
+                        <option value="2" selected>🟡 Amarillo — poco urgente</option>
+                        <option value="1">🟢 Verde — nada urgente</option>
+                    </select>
+                </div>
+
+                <div id="seccion_categoria">
+                    <label for="select_categoria">Categoría</label>
+                    <select id="select_categoria" name="categoria">
+                        <option value="⭐" selected>⭐ Sin categoría</option>
+                        <option value="✏️">✏️ Estudio</option>
+                        <option value="💼">💼 Trabajo</option>
+                        <option value="🚗">🚗 Trámites / salidas</option>
+                        <option value="🏠">🏠 Hogar</option>
+                        <option value="🛒">🛒 Compras</option>
+                        <option value="💪">💪 Salud</option>
+                        <option value="🎉">🎉 Ocio</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="zona_submit">
+                <button type="button" id="boton_borrar_item">BORRAR</button>
+                <button type="submit" id="boton_guardar_item">GUARDAR</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- ============================================================
+         TUTORIAL EN VENTANA (botón ?)
+         Un solo dialog de medidas fijas: el contenido lo carga el JS
+         desde PASOS_TUTORIAL, así todas las diapositivas miden igual.
+         ============================================================ -->
+    <dialog id="tutorial_dialog" class="dialog_tutorial">
+        <button type="button" class="boton_saltar" id="dialog_saltar">SALTAR TUTORIAL</button>
+
+        <div class="divsTutorial">
+            <div class="imagenTutoriales">
+                <img id="dialog_imagen" src="" alt="">
+            </div>
+            <div class="textotutorial" id="dialog_texto"></div>
+        </div>
+
+        <span class="paso_tutorial" id="dialog_paso">1 / 7</span>
+        <button type="button" class="boton_anterior" id="dialog_anterior">❮</button>
+        <button type="button" class="boton_siguiente latido" id="dialog_siguiente">❯</button>
+    </dialog>
+
+    <!-- ============================================================
+         TUTORIAL VISUAL (primer ingreso)
+         ============================================================ -->
+    <div id="tutorial_visual" hidden>
+        <div id="foco"></div>
+        <div id="globo_visual">
+            <button type="button" class="boton_saltar" id="visual_saltar">SALTAR TUTORIAL</button>
+            <div class="textotutorial" id="visual_texto"></div>
+            <span class="paso_tutorial" id="visual_paso">1 / 7</span>
+            <button type="button" class="boton_anterior" id="visual_anterior">❮</button>
+            <button type="button" class="boton_siguiente latido" id="visual_siguiente">❯</button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         DIALOG: TUTORIAL DEL APARATO FÍSICO
+         ============================================================ -->
+    <dialog id="tutorial_agenda" class="dialog_tutorial">
+        <button type="button" class="boton_cerrar" data-cerrar="tutorial_agenda" title="Cerrar">✕</button>
+        <div class="divsTutorial">
+            <div class="imagenTutoriales">
+                <img src="cohete.png" alt="el aparato físico de ÓRBITASK">
+            </div>
+            <div class="textotutorial">
+                <h2>El aparato físico</h2>
+                <p>¡ÓRBITASK también vive fuera de la pantalla de tu compu!</p>
+                <p>Armamos una funda impresa en 3D con forma de cohete, con una pantalla táctil adentro. Se apoya en tu escritorio y la manejás con un lápiz táctil.</p>
+                <p>Se conecta al WiFi y muestra exactamente lo mismo que la página: tu mascota, la barra de vida con el nivel, pendientes y realizados. Desde ahí podés agregar tareas con el teclado en pantalla, marcarlas como hechas y alimentar a tu mascota.</p>
+                <p>Lo mejor es que todo está conectado: lo que hacés en el aparato aparece en la página, y lo que hacés en la página aparece en el aparato.</p>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- ============================================================
+         DIALOG: MI CUENTA
+         ============================================================ -->
+    <dialog id="dialog_cuenta">
+        <button type="button" class="boton_cerrar" data-cerrar="dialog_cuenta" title="Cerrar">✕</button>
+
+        <div id="caja_cuenta">
+            <h2 id="titulo_cuenta">MI CUENTA</h2>
+
+            <div id="zona_foto">
+                <div id="marco_foto">
+                    <img id="foto_grande" src="" alt="tu foto de perfil">
+                    <span id="sin_foto">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+                        </svg>
+                    </span>
+                </div>
+
+                <div id="botones_foto">
+                    <button type="button" id="boton_elegir_foto">CAMBIAR FOTO</button>
+                    <button type="button" id="boton_quitar_foto">Quitar foto</button>
+                    <input type="file" id="archivo_foto" accept="image/*" hidden>
+                </div>
+            </div>
+
+            <form id="form_cuenta" autocomplete="off">
+                <label for="cuenta_nombre">Cómo te llamamos</label>
+                <input type="text" id="cuenta_nombre" maxlength="20" required>
+                <p class="ayuda_cuenta">Es también el nombre con el que entrás.</p>
+
+                <p class="ayuda_cuenta" id="cuenta_mail">Mail: —</p>
+
+                <label for="cuenta_clave">Contraseña nueva</label>
+                <input type="password" id="cuenta_clave" maxlength="40"
+                       placeholder="Dejalo vacío para no cambiarla">
+
+                <label for="cuenta_clave2">Repetir la contraseña nueva</label>
+                <input type="password" id="cuenta_clave2" maxlength="40"
+                       placeholder="Lo mismo de arriba">
+
+                <p id="cuenta_error"></p>
+                <p id="cuenta_ok"></p>
+
+                <button type="submit" id="boton_guardar_cuenta">GUARDAR CAMBIOS</button>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- ============================================================
+         DIALOG: INFORMACIÓN Y REDES
+         ============================================================ -->
+    <dialog id="dialog_info">
+        <button type="button" class="boton_cerrar" data-cerrar="dialog_info" title="Cerrar">✕</button>
+        <div id="caja_info">
+            <h2 id="titulo_info">¿QUERÉS ESTAR AL TANTO?</h2>
+            <p id="texto_info">
+                Seguinos en nuestras redes y enterate de todas las actualizaciones
+                y mejoras que le vamos haciendo a ÓRBITASK.
+            </p>
+            <a id="boton_instagram"
+               href="https://www.instagram.com/orbitask_ar?dlrf=MWJwcTFkbXNlM2I0NA=="
+               target="_blank" rel="noopener noreferrer">
+                <span class="logo_pequeno" aria-hidden="true">
+                    <img src="https://ik.imagekit.io/ui9le8s20/IMG_5605.PNG" alt="">
+                </span>
+                <span>@orbitask_ar</span>
+            </a>
+        </div>
+    </dialog>
+
+    <!-- ============================================================
+         DIALOG: MASCOTA ASIGNADA (una sola vez, tras el 1er tutorial)
+         ============================================================ -->
+    <dialog id="mascota_revelada">
+        <h2 id="titulo_revelada">¡FELICIDADES!<br>ESTA ES TU MASCOTA ESPACIAL</h2>
+        <div id="marco_revelada">
+            <img id="gif_revelada" src="" alt="tu mascota espacial">
+        </div>
+        <p id="nombre_revelada">—</p>
+        <p id="texto_revelada">Cuidala, alimentala con tus tareas realizadas y llevala al nivel más alto posible.</p>
+        <button type="button" id="boton_revelada" class="latido">¡VAMOS!</button>
+    </dialog>
+
+    <script src="orbitask.js" defer></script>
+    <script src="orbitask-sync.js" defer></script>
+</body>
+</html>
