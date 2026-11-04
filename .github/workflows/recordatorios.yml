@@ -1,0 +1,32 @@
+name: Recordatorios ORBITASK
+
+# Manda el mail de "hace una semana que no entrás" sin que nadie
+# tenga que abrir la página. Lo hace GitHub, solo, una vez por día.
+
+on:
+  schedule:
+    # 12:23 UTC = 9:23 de la mañana en Argentina.
+    # GitHub puede atrasarlo unos minutos, no importa.
+    - cron: "23 12 * * *"
+
+  # además deja el botón "Run workflow" para dispararlo a mano
+  workflow_dispatch:
+
+jobs:
+  avisar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Traer el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Mandar los recordatorios
+        run: node recordatorios.mjs
+        env:
+          EMAILJS_PUBLICA: ${{ secrets.EMAILJS_PUBLICA }}
+          EMAILJS_PRIVADA: ${{ secrets.EMAILJS_PRIVADA }}
