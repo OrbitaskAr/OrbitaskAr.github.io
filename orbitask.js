@@ -1046,21 +1046,41 @@ function pintarTablaAdmin(estadosRemotos){
             const enPausa  = !!amenaza.pausada;
             const atacando = (amenaza.atacandoHasta || 0) > Date.now();
 
+            const caja = document.createElement("div");
+            caja.className = "celda_amenaza";
+
+            /* el temporizador: tocarlo frena las amenazas, y tocarlo otra
+               vez las vuelve a poner en marcha */
             const boton = document.createElement("button");
             boton.type = "button";
             boton.className = "boton_amenaza" + (enPausa ? " pausada" : (atacando ? " atacando" : ""));
-            boton.dataset.usuario = u;
-            boton.dataset.llega   = amenaza.llegaEn || 0;
-            boton.dataset.pausada = enPausa ? "1" : "0";
-            boton.title = enPausa ? "Pulsá para volver a activar las amenazas de este usuario"
-                                  : "Pulsá para frenar las amenazas de este usuario";
+            boton.dataset.usuario  = u;
+            boton.dataset.llega    = amenaza.llegaEn || 0;
+            boton.dataset.atacando = amenaza.atacandoHasta || 0;
+            boton.dataset.pausada  = enPausa ? "1" : "0";
+            boton.title = enPausa ? "Las amenazas están frenadas. Pulsá para que vuelvan a correr."
+                                  : "Pulsá para frenar las amenazas de este usuario hasta nuevo aviso.";
             boton.textContent = etiquetaAmenaza(boton);
 
             boton.addEventListener("click", function(){
                 cambiarAmenaza(u, enPausa ? "activar" : "pausar");
             });
 
-            tdAmenaza.appendChild(boton);
+            /* la otra opción: cortar la de ahora y dejar que venga la próxima */
+            const saltar = document.createElement("button");
+            saltar.type = "button";
+            saltar.className = "boton_saltar_amenaza";
+            saltar.textContent = atacando ? "Cortar el ataque" : "Hasta la próxima";
+            saltar.title = atacando
+                ? "Termina el ataque de ahora y programa la amenaza siguiente"
+                : "Cancela la amenaza que viene y programa la siguiente";
+            saltar.disabled = enPausa;
+            saltar.addEventListener("click", function(){
+                cambiarAmenaza(u, "saltar");
+            });
+
+            caja.append(boton, saltar);
+            tdAmenaza.appendChild(caja);
         }
         fila.appendChild(tdAmenaza);
 
@@ -1124,11 +1144,15 @@ function pintarTablaAdmin(estadosRemotos){
 function etiquetaAmenaza(boton){
     if(boton.dataset.pausada === "1") return "EN PAUSA";
 
+    // mientras el ataque ocurre se dice eso, con lo que le falta para terminar
+    const atacando = Number(boton.dataset.atacando || 0);
+    if(atacando > Date.now()) return "EN PROCESO  " + formatearTiempo(atacando - Date.now());
+
     const llega = Number(boton.dataset.llega || 0);
     if(!llega) return "sin programar";
 
     const falta = llega - Date.now();
-    return (falta <= 0) ? "¡llegando!" : formatoLargo(falta);
+    return (falta <= 0) ? "EN PROCESO" : formatoLargo(falta);
 }
 
 function arrancarRelojPanel(){
@@ -1174,15 +1198,22 @@ function cambiarAmenaza(usuario, accion){
         copia.amenaza.atacandoHasta = 0;
         copia.amenaza.detenidoHasta = 0;
     }else{
-        copia.amenaza.pausada = false;
-        copia.amenaza.llegaEn = Date.now() + esperaDeAmenaza();
+        /* "activar" y "saltar" hacen lo mismo con los datos: dejan de
+           atacar y programan la amenaza siguiente. La diferencia es de
+           dónde venían: una estaba en pausa y la otra en curso. */
+        copia.amenaza.pausada        = false;
+        copia.amenaza.atacandoHasta  = 0;
+        copia.amenaza.detenidoHasta  = 0;
+        copia.amenaza.efecto         = null;
+        copia.amenaza.llegaEn        = Date.now() + esperaDeAmenaza();
         copia.amenaza.nivelNecesario = (copia.nivel || 0) + 1;
     }
 
     copia.rev    = Date.now();
     copia.origen = "panel";
 
-    estadoAdmin.textContent = (accion === "pausar" ? "Frenando" : "Activando") + " las amenazas de " + usuario + "...";
+    const QUE_HACE = { pausar: "Frenando", activar: "Activando", saltar: "Cortando" };
+    estadoAdmin.textContent = (QUE_HACE[accion] || "Cambiando") + " las amenazas de " + usuario + "...";
 
     fetch(FIREBASE_URL + "/usuarios/" + usuario + ".json", {
         method: "PUT",
@@ -1191,9 +1222,10 @@ function cambiarAmenaza(usuario, accion){
     }).then(() => {
         estadosDelPanel[usuario] = copia;
         pintarTablaAdmin(estadosDelPanel);
-        estadoAdmin.textContent = accion === "pausar"
-            ? "Amenazas frenadas para " + usuario
-            : "Amenazas activadas para " + usuario;
+        estadoAdmin.textContent =
+              accion === "pausar" ? "Amenazas frenadas para " + usuario
+            : accion === "saltar" ? "Cortada la amenaza de " + usuario + ": ya está programada la próxima"
+            :                       "Amenazas activadas para " + usuario;
     }).catch(e => {
         console.warn("[nube] no se pudo cambiar la amenaza:", e);
         estadoAdmin.textContent = "No se pudo guardar el cambio";
