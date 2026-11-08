@@ -68,7 +68,7 @@ const MASCOTAS = [
         id: "frog",
         nombre: "FROG",
         descripcion: "Perro-fuego",
-        gif: "https://ik.imagekit.io/ui9le8s20/pixil-gif-drawing%20(1).gif"
+        gif: "https://ik.imagekit.io/ui9le8s20/I%2010-09-26%20pp.gif"
     }
 ];
 
