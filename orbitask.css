@@ -481,8 +481,8 @@ header{
 /* el cohete va en diagonal: si se lo deja grande, las puntas tocan
    el borde redondo del botón y queda apretado */
 #botontut2 .logo_pequeno{
-    height: 21px;
-    width: 26.6px;        /* 21 × 1.269 */
+    height: 26px;
+    width: 33px;          /* 26 × 1.269 */
     animation: none;
 }
 
@@ -551,7 +551,7 @@ main{
     background-size: cover, 300px auto;
     background-position: center, center;
     border-radius: 10px;
-    padding: 14px;
+    padding: 8px;
     overflow: hidden;
     min-height: 0;
 }
@@ -566,8 +566,8 @@ main{
 /* la mascota nunca llega al borde del recuadro: siempre le queda aire
    arriba y abajo, aunque el recuadro sea bajito */
 #gif_mascota{
-    max-width: 96%;
-    max-height: 94%;
+    max-width: 100%;
+    max-height: 100%;
     width: auto;
     height: auto;
     image-rendering: pixelated;
@@ -1606,7 +1606,7 @@ dialog::backdrop{ background-color: rgba(0,0,0,.72); }
     #nav_botones button{ height: 38px; width: 38px; }
     #nav_botones button > svg,
     #menu_movil svg{ width: 22px; height: 22px; }
-    #botontut2 .logo_pequeno{ height: 18px; width: 22.8px; }
+    #botontut2 .logo_pequeno{ height: 21px; width: 26.6px; }
 
     main{ padding: 0 12px 20px; }
 
@@ -1804,19 +1804,18 @@ dialog::backdrop{ background-color: rgba(0,0,0,.72); }
     }
 
     /* orden: gif · barra de vida · nombre · listas.
-       En el celular lo que importa son las tareas, así que la mascota
-       ocupa lo justo y el resto de la pantalla queda para la lista. */
+       La mascota ocupa poco: lo que importa en el celular son las tareas. */
     #seccion_personaje{
-        grid-template-rows: minmax(92px, min(18vh, 168px)) auto auto;
+        grid-template-rows: minmax(120px, 24vh) auto auto;
         min-height: 0;
-        padding: 9px;
-        gap: 6px;
+        padding: 11px;
+        gap: 8px;
     }
 
-    #seccion_QBy{ min-height: 92px; padding: 8px; }
-    #seccion_tutorial{ padding: 7px 10px; }
-    #nombre_mascota{ font-size: 19px; margin-bottom: 1px; }
-    #tip_mascota{ font-size: 11px; line-height: 1.25; }
+    #seccion_QBy{ min-height: 120px; }
+    #seccion_tutorial{ padding: 8px 11px; }
+    #nombre_mascota{ font-size: 21px; margin-bottom: 2px; }
+    #tip_mascota{ font-size: 11.5px; line-height: 1.3; }
 
     #zona_vida{ gap: 8px; }
     #barra_vida{ height: 22px; }
@@ -1829,9 +1828,9 @@ dialog::backdrop{ background-color: rgba(0,0,0,.72); }
     #amenaza_tiempo{ font-size: 26px; }
     #amenaza_nivel{ font-size: 12px; }
 
-    /* y las listas, con todo el alto que sobre */
+    /* y las listas, bien amplias */
     #lista_pendientes,
-    #lista_realizados{ min-height: min(52vh, 420px); }
+    #lista_realizados{ min-height: 300px; }
 
     /* ---------- una sola lista a la vez, elegida con las pestañas ---------- */
     #seccion_lista{ grid-template-rows: auto auto; }
